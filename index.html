@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gemini Workspace & Asset Studio</title>
-    <!-- Tailwind CSS v4 -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <style>
         ::-webkit-scrollbar { width: 6px; }
@@ -18,7 +17,6 @@
             --accent: #000000;
         }
 
-        /* 资产画布的独立样式 */
         .upload-card {
             background: var(--card-bg);
             border: 1px solid var(--border-color);
@@ -70,6 +68,8 @@
             height: 100%;
             opacity: 0;
             cursor: pointer;
+            left: 0;
+            top: 0;
         }
 
         .controls {
@@ -106,33 +106,27 @@
 </head>
 <body class="bg-slate-50 h-screen flex overflow-hidden font-sans m-0 p-0">
 
-    <!-- 左侧：Gemini 智能工作台聊天区 -->
     <div class="w-1/2 flex flex-col h-full bg-white border-r border-slate-200">
-        <!-- 头部导航 -->
         <div class="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
             <h1 class="text-lg font-bold text-slate-800 tracking-wide m-0">Gemini 智能工作台</h1>
             <span class="text-xs bg-emerald-100 text-emerald-700 px-2.5 py-1 rounded-full font-medium">系统就绪</span>
         </div>
 
-        <!-- 聊天历史记录 -->
         <div id="chat-history" class="flex-1 overflow-y-auto p-4 space-y-4">
             <div class="flex gap-3">
                 <div class="w-8 h-8 rounded-full bg-slate-800 text-white flex items-center justify-center text-xs font-bold shrink-0">AI</div>
                 <div class="bg-slate-100 text-slate-700 p-3 rounded-2xl max-w-[85%] text-sm">
-                    你好！我是你的 AI 多模态助手。我可以帮你调整蜂蜜产品的图片视角、更换厨房背景，或者像 Claude 一样帮你直接开发前端网页。请在下方输入指令或上传原图。
+                    你好！我是你的 AI 多模态助手。我可以帮你调整产品的图片视角、更换背景，或者直接开发前端网页。请在下方输入指令或上传原图。
                 </div>
             </div>
         </div>
 
-        <!-- 输入区域 -->
         <div class="p-4 border-t border-slate-100 bg-slate-50">
-            <!-- 图片预览缩略图 -->
             <div id="image-preview-container" class="hidden mb-3 relative inline-block">
                 <img id="image-preview" class="h-20 w-20 object-cover rounded-lg border border-slate-300 shadow-sm">
                 <button onclick="clearImage()" class="absolute -top-2 -right-2 bg-rose-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-rose-600 shadow cursor-pointer">×</button>
             </div>
 
-            <!-- 文本与发送框 -->
             <div class="flex items-end gap-2 bg-white border border-slate-200 rounded-xl p-2 shadow-xs">
                 <label class="p-2 text-slate-500 hover:text-slate-800 cursor-pointer transition-colors shrink-0">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
@@ -152,7 +146,6 @@
         </div>
     </div>
 
-    <!-- 右侧：Artifacts 全自动实时渲染区/多图资产工作室 -->
     <div class="w-1/2 h-full bg-slate-900 flex flex-col relative">
         <div class="p-4 bg-slate-950 text-slate-400 text-xs font-mono flex items-center justify-between border-b border-slate-800">
             <span>ARTIFACTS PREVIEW (全自动实时渲染区)</span>
@@ -163,22 +156,18 @@
             </div>
         </div>
         
-        <!-- 渲染容器：动态切换沙箱与原生多图组件 -->
         <div class="flex-1 bg-white m-4 rounded-xl overflow-hidden shadow-2xl relative flex flex-col">
-            <!-- 动态渲染的沙箱 iframe（当 AI 有代码返回时盖在这层上面） -->
             <iframe id="preview-sandbox" class="w-full h-full border-0 bg-slate-50 hidden"></iframe>
             
-            <!-- 默认展示：高级多图替换资产工作区 (Visual Asset Studio) -->
             <div id="default-asset-studio" class="w-full h-full flex flex-col items-center justify-center p-6 bg-slate-50 overflow-y-auto">
                 <h2 class="text-md font-medium tracking-wider text-slate-800 uppercase mb-6">Visual Asset Studio</h2>
                 
                 <div class="flex gap-4 justify-center flex-wrap w-full">
-                    <!-- 卡片 1 -->
                     <div class="upload-card" data-index="0">
                         <div class="text-[10px] text-slate-400 font-mono mb-1.5 tracking-wider">SLOT 01</div>
-                        <div class="preview-area">
+                        <div class="preview-area" id="preview-0">
                             <span class="upload-hint">点击或拖拽图片</span>
-                            <input type="file" class="file-input" accept="image/*" onchange="handleWorkspaceUpload(this)">
+                            <input type="file" class="file-input" accept="image/*" onchange="handleWorkspaceUpload(this, 0)">
                         </div>
                         <div class="controls">
                             <button class="swap-btn" onclick="swapCard(0, 'left')" disabled>◀</button>
@@ -186,12 +175,11 @@
                         </div>
                     </div>
 
-                    <!-- 卡片 2 -->
                     <div class="upload-card" data-index="1">
                         <div class="text-[10px] text-slate-400 font-mono mb-1.5 tracking-wider">SLOT 02</div>
-                        <div class="preview-area">
+                        <div class="preview-area" id="preview-1">
                             <span class="upload-hint">点击或拖拽图片</span>
-                            <input type="file" class="file-input" accept="image/*" onchange="handleWorkspaceUpload(this)">
+                            <input type="file" class="file-input" accept="image/*" onchange="handleWorkspaceUpload(this, 1)">
                         </div>
                         <div class="controls">
                             <button class="swap-btn" onclick="swapCard(1, 'left')">◀</button>
@@ -199,12 +187,11 @@
                         </div>
                     </div>
 
-                    <!-- 卡片 3 -->
                     <div class="upload-card" data-index="2">
                         <div class="text-[10px] text-slate-400 font-mono mb-1.5 tracking-wider">SLOT 03</div>
-                        <div class="preview-area">
+                        <div class="preview-area" id="preview-2">
                             <span class="upload-hint">点击或拖拽图片</span>
-                            <input type="file" class="file-input" accept="image/*" onchange="handleWorkspaceUpload(this)">
+                            <input type="file" class="file-input" accept="image/*" onchange="handleWorkspaceUpload(this, 2)">
                         </div>
                         <div class="controls">
                             <button class="swap-btn" onclick="swapCard(2, 'left')">◀</button>
@@ -219,7 +206,6 @@
 
     <script>
         let currentBase64Image = null;
-        // ⚠️【关键配置】：请保持你原本的 Vercel 后端网址
         const BACKEND_URL = 'https://gemini-backend-2lze460gp-moodycoffee.vercel.app/api/chat'; 
 
         // ==================== 左侧智能聊天控制逻辑 ====================
@@ -270,7 +256,7 @@
                     const cleanHtml = codeMatch ? codeMatch[1] : result.data;
                     renderToSandbox(cleanHtml);
                 }
-            } {
+            } catch (err) {
                 document.getElementById(loadingId).innerText = "请求失败了，请检查后端状态: " + err.message;
             }
             clearImage();
@@ -293,7 +279,6 @@
         }
 
         function renderToSandbox(htmlContent) {
-            // 显示沙箱，隐藏默认的多图资产面板
             document.getElementById('default-asset-studio').classList.add('hidden');
             const sandbox = document.getElementById('preview-sandbox');
             sandbox.classList.remove('hidden');
@@ -307,11 +292,8 @@
         // ==================== 右侧：Visual Asset Studio 多图互换逻辑 ====================
         let storeData = [null, null, null];
 
-        function handleWorkspaceUpload(input) {
-            const card = input.closest('.upload-card');
-            const index = parseInt(card.getAttribute('data-index'));
+        function handleWorkspaceUpload(input, index) {
             const file = input.files[0];
-            
             if (file) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
@@ -333,23 +315,21 @@
         }
 
         function renderWorkspace() {
-            const cards = document.querySelectorAll('.upload-card');
-            cards.forEach((card, index) => {
-                const previewArea = card.querySelector('.preview-area');
-                const data = storeData[index];
-                
+            for (let i = 0; i < 3; i++) {
+                const previewArea = document.getElementById(`preview-${i}`);
+                const data = storeData[i];
                 if (data) {
                     previewArea.innerHTML = `
                         <img src="${data}">
-                        <input type="file" class="file-input" accept="image/*" onchange="handleWorkspaceUpload(this)">
+                        <input type="file" class="file-input" accept="image/*" onchange="handleWorkspaceUpload(this, ${i})">
                     `;
                 } else {
                     previewArea.innerHTML = `
                         <span class="upload-hint">点击或拖拽图片</span>
-                        <input type="file" class="file-input" accept="image/*" onchange="handleWorkspaceUpload(this)">
+                        <input type="file" class="file-input" accept="image/*" onchange="handleWorkspaceUpload(this, ${i})">
                     `;
                 }
-            });
+            }
         }
     </script>
 </body>
