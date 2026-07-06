@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gemini Workspace</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style>
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+    </style>
+</head>
+<body class="bg-slate-50 h-screen flex overflow-hidden font-sans">
+
+    <div class="w-1/2 flex flex-col h-full bg-white border-r border-slate-200">
+        <div class="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+            <h1 class="text-lg font-bold text-slate-800 tracking-wide">Gemini 智能工作台</h1>
+            <span class="text-xs bg-emerald-100 text-emerald-700 px-2.5 py-1 rounded-full font-medium">系统就绪</span>
+        </div>
+
+        <div id="chat-history" class="flex-1 overflow-y-auto p-4 space-y-4">
+            <div class="flex gap-3">
+                <div class="w-8 h-8 rounded-full bg-slate-800 text-white flex items-center justify-center text-xs font-bold">AI</div>
+                <div class="bg-slate-100 text-slate-700 p-3 rounded-2xl max-w-[85%] text-sm">
+                    你好！我是你的 AI 多模态助手。我可以帮你调整蜂蜜产品的图片视角、更换厨房背景，或者像 Claude 一样帮你直接开发前端网页。请在下方输入指令或上传原图。
+                </div>
+            </div>
+        </div>
+
+        <div class="p-4 border-t border-slate-100 bg-slate-50">
+            <div id="image-preview-container" class="hidden mb-3 relative inline-block">
+                <img id="image-preview" class="h-20 w-20 object-cover rounded-lg border border-slate-300 shadow-sm">
+                <button onclick="clearImage()" class="absolute -top-2 -right-2 bg-rose-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-rose-600 shadow cursor-pointer">×</button>
+            </div>
+
+            <div class="flex items-end gap-2 bg-white border border-slate-200 rounded-xl p-2 shadow-xs">
+                <label class="p-2 text-slate-500 hover:text-slate-800 cursor-pointer transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V6.75zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+                    </svg>
+                    <input type="file" id="file-input" accept="image/*" class="hidden" onchange="previewImage(event)">
+                </label>
+                
+                <textarea id="user-input" rows="1" class="flex-1 resize-none border-0 focus:ring-0 focus:outline-hidden text-sm p-2 text-slate-700 max-h-32" placeholder="输入指令或描述你的网页开发需求..."></textarea>
+                
+                <button onclick="handleSubmit()" class="bg-slate-800 hover:bg-slate-900 text-white p-2 rounded-lg cursor-pointer transition-all">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="w-1/2 h-full bg-slate-900 flex flex-col relative">
+        <div class="p-4 bg-slate-950 text-slate-400 text-xs font-mono flex items-center justify-between border-b border-slate-800">
+            <span>ARTIFACTS PREVIEW (全自动实时渲染区)</span>
+            <div class="flex gap-2">
+                <span class="w-3 h-3 rounded-full bg-rose-500"></span>
+                <span class="w-3 h-3 rounded-full bg-amber-500"></span>
+                <span class="w-3 h-3 rounded-full bg-emerald-500"></span>
+            </div>
+        </div>
+        <div class="flex-1 bg-white m-4 rounded-xl overflow-hidden shadow-2xl relative">
+            <iframe id="preview-sandbox" class="w-full h-full border-0 bg-slate-50"></iframe>
+            <div id="no-preview" class="absolute inset-0 bg-slate-800 flex flex-col items-center justify-center text-slate-500 space-y-2">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-10 h-10 text-slate-600">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5" />
+                </svg>
+                <p class="text-sm font-medium">暂无渲染内容</p>
+                <p class="text-xs text-slate-600">当你让 AI 修改图片或开发代码时，成品会在这里实时展示出来</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentBase64Image = null;
+
+        // ⚠️【关键配置】：请把这里换成你刚刚部署好的、真正的 Vercel 后端网址！
+        const BACKEND_URL = 'https://gemini-backend-2lze460gp-moodycoffee.vercel.app/api/chat'; 
+
+        // 处理图片上传并转成 Base64 字符串
+        function previewImage(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                currentBase64Image = e.target.result.split(',')[1];
+                document.getElementById('image-preview').src = e.target.result;
+                document.getElementById('image-preview-container').classList.remove('hidden');
+            }
+            reader.readAsDataURL(file);
+        }
+
+        // 清除已上传图片
+        function clearImage() {
+            currentBase64Image = null;
+            document.getElementById('file-input').value = '';
+            document.getElementById('image-preview-container').classList.add('hidden');
+        }
+
+        // 点击发送按钮后触发的函数
+        async function handleSubmit() {
+            const inputEl = document.getElementById('user-input');
+            const text = inputEl.value.trim();
+            if (!text && !currentBase64Image) return;
+
+            // 1. 把用户的输入贴到聊天区
+            appendMessage('user', text, currentBase64Image ? `data:image/jpeg;base64,${currentBase64Image}` : null);
+            inputEl.value = '';
+            
+            // 2. 插入 AI 正在思考的过渡状态
+            const loadingId = appendMessage('assistant', '思考中，并请求大模型调理画布...', null);
+
+            try {
+                // 3. 异步请求你的 Vercel 后端大脑
+                const response = await fetch(BACKEND_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: text, imageBase64: currentBase64Image })
+                });
+                const result = await response.json();
+
+                // 移除加载状态
+                document.getElementById(loadingId).remove();
+
+                // 4. 根据后端判断的意图，在右侧沙箱里做不同的渲染
+                if (result.type === 'image') {
+                    appendMessage('assistant', result.text, null);
+                    // 渲染全屏居中的 AI 生成图
+                    renderToSandbox(`<div style="display:flex;justify-content:center;align-items:center;height:100vh;background:#0f172a;"><img src="${result.data}" style="max-width:100%;max-height:100%;object-fit:contain;border-radius:12px;box-shadow:0 25px 50px -12px rgba(0,0,0,0.5)"/></div>`);
+                } else if (result.type === 'code') {
+                    appendMessage('assistant', result.text, null);
+                    // 提取 ```html ... ``` 中间的纯网页代码并丢给沙箱渲染
+                    const codeMatch = result.data.match(/```html([\s\S]*?)```/);
+                    const cleanHtml = codeMatch ? codeMatch[1] : result.data;
+                    renderToSandbox(cleanHtml);
+                }
+            } catch (err) {
+                document.getElementById(loadingId).innerText = "请求失败了，请检查后端 URL 或联网状态: " + err.message;
+            }
+            clearImage();
+        }
+
+        // 向聊天区添加消息的辅助函数
+        function appendMessage(role, text, imgData) {
+            const history = document.getElementById('chat-history');
+            const id = 'msg-' + Date.now();
+            const msgHtml = `
+                <div class="flex gap-3" id="${id}">
+                    <div class="w-8 h-8 rounded-full ${role==='user'?'bg-blue-600':'bg-slate-800'} text-white flex items-center justify-center text-xs font-bold">${role==='user'?'ME':'AI'}</div>
+                    <div class="${role==='user'?'bg-blue-50 text-blue-900':'bg-slate-100 text-slate-700'} p-3 rounded-2xl max-w-[85%] text-sm space-y-2">
+                        ${text ? `<div>${text}</div>` : ''}
+                        ${imgData ? `<img src="${imgData}" class="max-w-xs rounded-lg border mt-1">` : ''}
+                    </div>
+                </div>`;
+            history.insertAdjacentHTML('beforeend', msgHtml);
+            history.scrollTop = history.scrollHeight;
+            return id;
+        }
+
+        // 把代码或图片内容打进 <iframe> 独立沙箱中进行无缝预览
+        function renderToSandbox(htmlContent) {
+            document.getElementById('no-preview').classList.add('hidden');
+            const sandbox = document.getElementById('preview-sandbox');
+            const doc = sandbox.contentWindow.document;
+            doc.open();
+            doc.write(htmlContent);
+            doc.close();
+        }
+    </script>
+</body>
+</html>
