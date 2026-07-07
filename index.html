@@ -70,6 +70,7 @@
             cursor: pointer;
             left: 0;
             top: 0;
+            z-index: 10;
         }
 
         .controls {
@@ -240,12 +241,13 @@
             try {
                 const response = await fetch(BACKEND_URL, {
                     method: 'POST',
+                    mode: 'cors', // 强开跨域模式兜底
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ message: text, imageBase64: currentBase64Image })
                 });
                 const result = await response.json();
 
-                document.getElementById(loadingId).remove();
+                if (document.getElementById(loadingId)) document.getElementById(loadingId).remove();
 
                 if (result.type === 'image') {
                     appendMessage('assistant', result.text, null);
@@ -257,7 +259,10 @@
                     renderToSandbox(cleanHtml);
                 }
             } catch (err) {
-                document.getElementById(loadingId).innerText = "请求失败了，请检查后端状态: " + err.message;
+                // 安全隔离：哪怕后端崩溃报错，也绝不阻断前端脚本运行
+                if (document.getElementById(loadingId)) {
+                    document.getElementById(loadingId).innerText = "请求失败了，请检查后端状态: " + err.message;
+                }
             }
             clearImage();
         }
